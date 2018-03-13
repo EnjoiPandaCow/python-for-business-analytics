@@ -10,6 +10,12 @@ import numpy
 import seaborn
 import matplotlib.pyplot as plot
 
+#set PANDAS to show all columns in Data frame
+pandas.set_option('display.max_columns', None)
+
+#set PANDAS to show all rows in Data frame
+pandas.set_option('display.max_rows', None)
+
 #load dataset from the csv file in the dataframe called nesarc_data
 nesarc_data = pandas.read_csv('nesarc_pds.csv',low_memory=False)
 
@@ -154,11 +160,40 @@ seaborn.distplot(subset2['NUMCIGMO_EST'].dropna(),kde=False)
 plot.xlabel('Number of cigarettes per month')
 plot.title('Estimated number of cigarettes per month among young adult smokers in the Nesarc study')
 
-subset2['NUMCIGMO_EST_BINS']=pandas.cut(subset2.NUMCIGMO_EST,[199, 399, 599, 799, 999], labels=['1-200', '200-400', '400-600', '600 - 800', '800 - 1000', '1000 - 4000'])
-count2 = subset2['NUMCIGMO_EST_BINS'].value_counts(sort=True, dropna= True, normalize= True)
+print('Group the variable NUMCIGMO_EST into bins')
+subset2['NUMCIGMO_EST_BINS']=pandas.cut(subset2.NUMCIGMO_EST,[0, 200, 400, 600, 800, 1000, 4000], labels=['1-200', '200-400', '400-600', '600 - 800', '800 - 1000', '1000 - 4000'])
+count2 = subset2['NUMCIGMO_EST_BINS'].value_counts(sort=False, dropna= True)
 print(count2)
 
+chart3 = seaborn.countplot(x='NUMCIGMO_EST_BINS', data=subset2)
+plot.xlabel('Nicotine Dependence past 12 months by number of cigarettes')
+plot.title('Nicotine Dependnce among young adults')
 
+print ('describe number of cigarettes smoked per month')
+desc1 = subset2['NUMCIGMO_EST'].describe()
+print(desc1)
+
+### --- Part 3 --- ###
+subset2['PACKSPERMONTH'] = subset2['NUMCIGMO_EST']/20
+
+c5 = subset2.groupby('PACKSPERMONTH').size()
+print(c5)
+
+subset2['PACKCATEGORY'] = pandas.cut(subset2.PACKSPERMONTH, [0,5,10,20,30,147])
+
+#change format of variable from numerical to Categorical 
+subset2['PACKCATEGORY'] = subset2['PACKCATEGORY'].astype('category')
+
+print('Describe nicotine dependence')
+desc3 = subset2.groupby('PACKCATEGORY').size()
+print(desc3)
+
+subset2['TAB12MDX'] = pandas.to_numeric(subset2['TAB12MDX'],errors='ignore')
+
+#bivariate bar chart
+seaborn.factorplot(x='PACKCATEGORY',y='TAB12MDX',data=subset2, kind='bar',ci=None)
+plot.xlabel('Packs per month')
+plot.ylabel('Proportion Nicotine Dependence')
 
 
 
